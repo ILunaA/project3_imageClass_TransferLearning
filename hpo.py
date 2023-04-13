@@ -38,7 +38,7 @@ def test(model, test_loader,criterion, device):
 
     total_loss = running_loss / len(test_loader.dataset)
     total_acc = running_corrects/ len(test_loader.dataset)
-    print(f"Test set: Accuracy loss: {100*total_acc}, Testing Loss: {total_loss}")
+    print(f"Accuracy loss: {100*total_acc}, Testing Loss: {total_loss}")
 
 def train(model, train_loader, criterion, optimizer, device):
     '''
