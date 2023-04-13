@@ -113,15 +113,15 @@ def net():
     TODO: Complete this function that initializes your model
           Remember to use a pretrained model
     '''
-        model = models.resnet18(pretrained=True)
+    model = models.resnet18(pretrained=True)
 
-        for param in model.parameters():
-            param.requires_grad = False   
+    for param in model.parameters():
+        param.requires_grad = False   
 
-        num_features=model.fc.in_features
-        model.fc = nn.Sequential(
-                   nn.Linear(num_features, 133))
-        return model
+    num_features=model.fc.in_features
+    model.fc = nn.Sequential(
+        nn.Linear(num_features, 133))
+    return model
 
 def create_data_loaders(data, batch_size):
     '''
