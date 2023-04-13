@@ -129,7 +129,7 @@ def create_data_loaders(data, batch_size):
     depending on whether you need to use data loaders or not
     '''
     transform = transform.Compose([
-        transforms.RandomHorizontalFlip(p=0.5)
+        transforms.RandomHorizontalFlip(p=0.5),
         transforms.Resize((224,224)),
         transforms.ToTensor(),
         transforms.Normalize((0.1307,),(0.3081))
@@ -141,10 +141,44 @@ def create_data_loaders(data, batch_size):
     
     return data_loader
 
+
+def _get_train_data_loader(batch_size, training_dir):
+    logger.info("Get train data loader")
+    dataset = os.environ["SM_CHANNEL_TRAINING"](
+        training_dir,
+        train=True,
+        transform=transforms.Compose(
+            [transforms.ToTensor()]
+        ),
+    )
+
+    return torch.utils.data.DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=True
+    )
+
+
+def _get_test_data_loader(test_batch_size, training_dir):
+    logger.info("Get test data loader")
+    return torch.utils.data.DataLoader(
+        os.environ["SM_CHANNEL_TEST"](
+            training_dir,
+            train=False,
+            transform=transforms.Compose(
+                [transforms.ToTensor()]
+            ),
+        ),
+        batch_size=test_batch_size,
+        shuffle=True,
+    )
+
+
+train_loader = _get_train_data_loader(args.batch_size, args.data_dir)
+test_loader = _get_test_data_loader(args.test_batch_size, args.data_dir)
+
+
 def main(args):
-    os.environ["SM_CHANNEL_TRAIN"]
-    os.environ["SM_CHANNEL_VALID"]
-    os.environ["SM_CHANNEL_TEST"]
     
     '''
     TODO: Initialize a model by calling the net function
@@ -175,7 +209,7 @@ def main(args):
     torch.save(model, path)
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description ="Train script" )
+    parser=argparse.ArgumentParser(description ="HP tuning script" )
     
     parser.add_argument(
         "--batch-size",
@@ -194,9 +228,9 @@ if __name__=='__main__':
     parser.add_argument(
         "--epochs",
         type=int,
-        default=22
+        default=4,
         metavar="N",
-        help="number of epochs to train (default: 22)",
+        help="number of epochs to train (default: 4)",
     )
     parser.add_argument(
         "--lr", type=float, default=1.0, metavar="LR", help="learning rate (default: 1.0)"
@@ -208,12 +242,21 @@ if __name__=='__main__':
     '''
     TODO: Specify any training args that you might need
     '''
-    parser.add_argument(
-        "-- key1", ---
-    )
-    parser.add_argument(
-        "-- key2", ---
-    )
-    args=parser.parse_args()
+   # parser.add_argument(
+  #      "-- key1", ---
+   # ),
+   # parser.add_argument(
+  #      "-- key2", ---
+  #  ),
+   # args=parser.parse_args(),
+
+
+
+    parser.add_argument("--model-dir", type=str, default=os.environ["PATH"])
+    parser.add_argument("--data-dir", type=str, default=os.environ["SM_CHANNEL_TRAINING"])
+    parser.add_argument("--num-gpus", type=int, default=os.environ["SM_NUM_GPUS"])
+
+
+    #train(parser.parse_args('train_loader', 'criterion', 'optimizer',  'device'))
     
     main(args)
